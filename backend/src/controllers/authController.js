@@ -5,47 +5,38 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
-/**
- * Generate Access Token (short-lived, e.g., 15 minutes)
- * @param {string} userId - MongoDB ObjectId as string
- * @returns {string} JWT access token
- */
-
 const generateAccessToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_ACCESS_SECRET, {
     expiresIn: "15m",
   });
 };
 
-/**
- * Generate Refresh Token (long-lived, e.g., 7 days)
- * @param {string} userId
- * @returns {string} JWT refresh token
- */
 const generateRefreshToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: "7d",
   });
 };
 
-/**
- * Register a new user
- * Expected req.body: { email, password, name, age, bio?, interests? }
- */
+// Helper to get cookie options based on environment
+const getCookieOptions = (maxAge) => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProduction, // ✅ true in production (HTTPS)
+    sameSite: isProduction ? "none" : "lax", // ✅ 'none' for cross‑origin in production
+    maxAge,
+  };
+};
+
 const register = async (req, res) => {
   try {
-    // 1. Check for validation errors from express-validator middleware
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { email, password, name, age, bio, interests } = req.body;
 
-    // 2. Check if user already exists (email unique)
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
@@ -54,11 +45,9 @@ const register = async (req, res) => {
       });
     }
 
-    // 3. Hash password using bcrypt with salt rounds = 10
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // 4. Create new user (minimal fields – profile can be completed later)
     const newUser = new User({
       email,
       passwordHash,
@@ -66,7 +55,7 @@ const register = async (req, res) => {
       age: age || null,
       bio: bio || "",
       interests: interests || [],
-      photos: [], // will be added later via profile update
+      photos: [],
       role: "user",
       isVerified: false,
       isBlocked: false,
@@ -74,29 +63,20 @@ const register = async (req, res) => {
 
     await newUser.save();
 
-    // 5. Generate tokens
     const accessToken = generateAccessToken(newUser._id);
     const refreshToken = generateRefreshToken(newUser._id);
 
-    // 6. Store refresh token in database (for token rotation later)
     newUser.refreshToken = refreshToken;
     await newUser.save();
 
-    // 7. Set bothtoken as HTTP-only cookie (secure, not accessible via JS)
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true, // prevents XSS
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    // ✅ Use dynamic cookie options
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie(
+      "refreshToken",
+      refreshToken,
+      getCookieOptions(7 * 24 * 60 * 60 * 1000),
+    );
 
-    // 8. Send response (do NOT send passwordHash or refreshToken)
     const userResponse = {
       _id: newUser._id,
       email: newUser.email,
@@ -108,25 +88,17 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      accessToken, // client uses this for API calls
+      accessToken,
       user: userResponse,
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-/**
- * Login existing user
- * Expected req.body: { email, password }
- */
 const login = async (req, res) => {
   try {
-    // 1. Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
@@ -134,7 +106,6 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // 2. Find user by email (include passwordHash field explicitly)
     const user = await User.findOne({ email }).select("+passwordHash");
     if (!user) {
       return res
@@ -142,7 +113,6 @@ const login = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // 3. Check if account is blocked
     if (user.isBlocked) {
       return res.status(403).json({
         success: false,
@@ -150,7 +120,6 @@ const login = async (req, res) => {
       });
     }
 
-    // 4. Compare password
     const isPasswordMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordMatch) {
       return res
@@ -158,30 +127,20 @@ const login = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // 5. Generate new tokens
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
-    // 6. Store new refresh token in DB (overwrites old one – simple rotation)
     user.refreshToken = refreshToken;
     await user.save();
 
-    // 7. Set both token as HTTP-only cookie
+    // ✅ Use dynamic cookie options
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie(
+      "refreshToken",
+      refreshToken,
+      getCookieOptions(7 * 24 * 60 * 60 * 1000),
+    );
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    // 8. Send response (sanitized user)
     const userResponse = {
       _id: user._id,
       email: user.email,
@@ -201,33 +160,25 @@ const login = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-/**
- * Refresh access token using refresh token from cookie
- * Expected: refreshToken in HTTP-only cookie
- */
+
 const refresh = async (req, res) => {
   try {
-    // 1. Get refresh token from cookie
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "No refresh token provided",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "No refresh token provided" });
     }
 
-    // 2. Verify refresh token
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     } catch (err) {
-      return res.status(403).json({
-        success: false,
-        message: "Invalid or expired refresh token",
-      });
+      return res
+        .status(403)
+        .json({ success: false, message: "Invalid or expired refresh token" });
     }
 
-    // 3. Find user with this refresh token
     const user = await User.findOne({
       _id: decoded.userId,
       refreshToken: refreshToken,
@@ -240,38 +191,26 @@ const refresh = async (req, res) => {
       });
     }
 
-    // 4. Check if account is blocked
     if (user.isBlocked) {
-      return res.status(403).json({
-        success: false,
-        message: "Account blocked",
-      });
+      return res
+        .status(403)
+        .json({ success: false, message: "Account blocked" });
     }
 
-    // 5. Generate new tokens (rotate)
     const newAccessToken = generateAccessToken(user._id);
     const newRefreshToken = generateRefreshToken(user._id);
 
-    // 6. Update refresh token in database
     user.refreshToken = newRefreshToken;
     await user.save();
 
-    // 7. Set both token as cookie
+    // ✅ Use dynamic cookie options
+    res.cookie("accessToken", newAccessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie(
+      "refreshToken",
+      newRefreshToken,
+      getCookieOptions(7 * 24 * 60 * 60 * 1000),
+    );
 
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
-    });
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    // 8. Send new access token
     res.status(200).json({
       success: true,
       accessToken: newAccessToken,
@@ -286,49 +225,57 @@ const logout = async (req, res) => {
   try {
     const { token } = req.body;
 
-    // If the interceptor loop is happening, req.user might be missing
     if (!req.user) {
       return res.status(204).send(); // Session already gone
     }
 
     await User.findByIdAndUpdate(req.user._id, {
       $set: { refreshToken: null },
-      $pull: { fcmTokens: token }, // This pulls the specific browser token
+      $pull: { fcmTokens: token },
     });
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    // ✅ Clear cookies with same options (to completely remove them)
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+
     res.json({ success: true });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false });
   }
 };
+
 const getMe = async (req, res) => {
   try {
     const user = req.user;
     const userId = user._id;
 
-    // Count active matches
     const matchesCount = await Match.countDocuments({
       $or: [{ userId1: userId }, { userId2: userId }],
       isActive: true,
     });
 
-    // Count messages sent by this user
     const messagesCount = await Message.countDocuments({ senderId: userId });
 
-    // Convert to plain object and add fields
     const userObj = user.toObject();
     userObj.matchesCount = matchesCount;
     userObj.messagesCount = messagesCount;
 
-    // req.user is set by protect middleware
     res.json({ success: true, user: userObj });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 module.exports = {
   register,
