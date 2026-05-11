@@ -137,40 +137,8 @@ The following features are **not yet implemented** but are on the roadmap for up
 - Stripe / Razorpay for premium subscriptions
 - SendGrid / Nodemailer for email campaigns
 - OpenAI API for conversation starters & moderation
-
-🏗️ Architecture Overview
-
-graph TB
-    subgraph Frontend [Next.js on Vercel]
-        UI[React Components]
-        State[Zustand / TanStack Query]
-        SocketClient[Socket.io Client]
-    end
-
-    subgraph Backend [Node.js on Render]
-        API[REST API]
-        SocketServer[Socket.io Server]
-        Auth[JWT + RBAC]
-        Controllers
-    end
-
-    subgraph External
-        Mongo[(MongoDB Atlas)]
-        Cloudinary
-        Firebase[Firebase Cloud Messaging]
-    end
-
-    UI -->|HTTP| API
-    UI -->|WebSocket| SocketServer
-    SocketClient --> SocketServer
-    API --> Mongo
-    API --> Cloudinary
-    API --> Firebase
-    SocketServer --> Mongo
-    SocketServer --> Firebase
-
+  
 Data Flow
-
 User authenticates → backend sets accessToken & refreshToken as HTTP‑only cookies.
 
 Frontend stores user object in Zustand (in‑memory); API calls include cookies automatically.
