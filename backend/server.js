@@ -22,6 +22,7 @@ const chatSocketHandler = require("./src/sockets/chatSocket");
 connectDB();
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
