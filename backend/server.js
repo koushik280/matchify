@@ -17,6 +17,9 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const authenticateSocket = require("./src/sockets/authSocket");
 const chatSocketHandler = require("./src/sockets/chatSocket");
+const swaggerUi = require('swagger-ui-express'); 
+const swaggerSpecs = require('./src/config/swagger'); 
+
 
 // Connect to MongoDB
 connectDB();
