@@ -42,12 +42,12 @@ export function Navbar() {
         { token: tokenToDelete },
         { withCredentials: true },
       );
-    } catch{
+    } catch {
       console.warn("Server logout failed, clearing local state.");
     } finally {
       logout(); // Clear Zustand
       toast.success("Logged out");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
   };
 

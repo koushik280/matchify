@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>()(
         });
         if (typeof window !== "undefined") {
           // Use window.location.replace to clear the session and the history entry
-          window.location.replace("/login");
+          window.location.replace("/");
         }
       },
 
@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>()(
             typeof window !== "undefined"
           ) {
             if (!window.location.pathname.includes("/login")) {
-              window.location.replace("/login");
+              window.location.replace("/");
             }
           }
         } finally {

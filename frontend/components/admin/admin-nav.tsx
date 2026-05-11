@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, Users, Flag, ScrollText, LogOut, 
-  ChevronLeft, ChevronRight, ArrowLeft
-} from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
-import api from '@/lib/axios';
-import toast from 'react-hot-toast';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  Flag,
+  ScrollText,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+} from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import api from "@/lib/axios";
+import toast from "react-hot-toast";
 
 interface AdminNavProps {
   collapsed: boolean;
@@ -19,25 +25,25 @@ export function AdminNav({ collapsed, onToggle }: AdminNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const isSuperAdmin = user?.role === 'superadmin';
+  const isSuperAdmin = user?.role === "superadmin";
 
   const items = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/users', label: 'Users', icon: Users },
-    { href: '/admin/reports', label: 'Reports', icon: Flag },
+    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/reports", label: "Reports", icon: Flag },
   ];
   if (isSuperAdmin) {
-    items.push({ href: '/admin/audit', label: 'Audit Logs', icon: ScrollText });
+    items.push({ href: "/admin/audit", label: "Audit Logs", icon: ScrollText });
   }
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
       logout();
-      toast.success('Logged out');
-      router.push('/login');
-    } catch{
-      toast.error('Logout failed');
+      toast.success("Logged out");
+      router.push("/");
+    } catch {
+      toast.error("Logout failed");
     }
   };
 
@@ -64,7 +70,9 @@ export function AdminNav({ collapsed, onToggle }: AdminNavProps) {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-white/10 text-muted-foreground'
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-white/10 text-muted-foreground"
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" />
@@ -90,7 +98,11 @@ export function AdminNav({ collapsed, onToggle }: AdminNavProps) {
         onClick={onToggle}
         className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-primary rounded-full p-1 shadow-md z-10"
       >
-        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        {collapsed ? (
+          <ChevronRight className="h-4 w-4" />
+        ) : (
+          <ChevronLeft className="h-4 w-4" />
+        )}
       </button>
     </div>
   );
