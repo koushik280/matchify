@@ -219,11 +219,17 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 glass border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-bold bg-linear-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent"
-          >
-            Matchify+
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Matchify+ logo"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <span className="text-2xl font-bold bg-linear-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+              Matchify+
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />
