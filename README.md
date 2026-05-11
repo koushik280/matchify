@@ -80,6 +80,64 @@ Vercel (frontend)
 
 MongoDB Atlas (database)
 
+
+## 🔮 Future Scope (Planned Enhancements)
+
+The following features are **not yet implemented** but are on the roadmap for upcoming releases:
+
+### Authentication & Security
+- Phone (OTP) login, Google OAuth integration
+- Two‑Factor Authentication (2FA)
+- Device/session management (logout from all devices)
+- CAPTCHA for bot protection
+
+### Profile System
+- Multi‑step onboarding wizard (improved UX)
+- Profile badges (premium, trending)
+- Short intro video upload (Reels‑style profile)
+
+### Discovery & Matching
+- AI‑based smart recommendations (collaborative filtering)
+- “Explore” section (trending profiles)
+- Reverse matching (who fits your profile)
+
+### Chat & Interaction
+- Voice notes in chat
+- GIF picker (GIPHY integration)
+- Video / audio calls (WebRTC)
+
+### Gamification
+- Daily swipe limit (free users)
+- Streak system with rewards
+- Coins/points system to unlock features
+
+### Premium Features
+- Profile boost (top visibility)
+- Incognito mode (browse secretly)
+- See who viewed your profile
+- Priority matching & advanced filters (height, education, lifestyle)
+
+### Safety & Privacy
+- AI‑based fake profile detection
+- Blur photos for unverified users
+- Screenshot detection alert
+- End‑to‑end encrypted chat (optional)
+
+### Admin & Analytics
+- Full analytics dashboard (DAU/MAU, retention graphs, heatmaps)
+- AI‑assisted content moderation
+- Bulk actions (block/delete multiple users)
+- Advanced filtering by location/activity
+
+### Developer Experience
+- GraphQL layer (optional)
+- Redis caching for sessions & messages
+
+### Third‑Party Integrations
+- Stripe / Razorpay for premium subscriptions
+- SendGrid / Nodemailer for email campaigns
+- OpenAI API for conversation starters & moderation
+
 🏗️ Architecture Overview
 
 graph TB
