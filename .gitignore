@@ -1,1 +1,6 @@
 backend/src/config/firebase-adminsdk.json
+backend/node_modules/
+frontend/node_modules/
+.env
+.env.local
+.DS_Storebackend/node_modules/

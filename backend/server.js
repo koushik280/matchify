@@ -68,6 +68,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/superadmin', superAdminRoutes);
 app.use('/api/message',messageRoutes)
 
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date() });
