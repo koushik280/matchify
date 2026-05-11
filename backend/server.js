@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin:"http://localhost:3000",
+    origin:"https://matchify-livid.vercel.app",
     credentials: true,
   },
 });
@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
 app.use(helmet()); // security headers
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://matchify-livid.vercel.app",
     credentials: true, // allow cookies
   }),
 );
