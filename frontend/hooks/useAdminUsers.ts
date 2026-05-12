@@ -32,6 +32,7 @@ export function useAdminUsers({
     mutationFn: blockUser,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success(`User ${variables.isBlocked ? "blocked" : "unblocked"}`);
     },
   });
@@ -40,6 +41,7 @@ export function useAdminUsers({
     mutationFn: changeUserRole,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success("User role updated");
     },
   });
@@ -48,6 +50,7 @@ export function useAdminUsers({
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success("User deleted");
     },
   });
@@ -56,6 +59,7 @@ export function useAdminUsers({
     mutationFn: verifyUser,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success(`User ${variables.isVerified ? "verified" : "unverified"}`);
     },
   });
