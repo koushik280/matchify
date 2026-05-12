@@ -13,10 +13,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, _hasHydrated } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
 
-  // Lazy initializer: read localStorage only once during initial render
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("adminSidebarCollapsed");
@@ -25,7 +24,6 @@ export default function AdminLayout({
     return false;
   });
 
-  // Save collapsed state to localStorage when it changes (no effect warning here)
   const handleToggle = () => {
     const newState = !collapsed;
     setCollapsed(newState);
@@ -34,14 +32,13 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!_hasHydrated) return;
-    if (!isLoading) {
-      if (!user) router.push("/");
-      else if (user.role !== "admin" && user.role !== "superadmin")
-        router.push("/dashboard");
+    if (!user) {
+      router.push("/");
+    } else if (user.role !== "admin" && user.role !== "superadmin") {
+      router.push("/dashboard");
     }
-  }, [user, isLoading, _hasHydrated, router]);
-
-  if (!_hasHydrated || isLoading) {
+  }, [_hasHydrated, user, router]);
+  if (!_hasHydrated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -56,7 +53,7 @@ export default function AdminLayout({
     <div className="min-h-screen bg-linear-to-br from-purple-900/20 via-pink-900/20 to-orange-900/20 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-orange-950/30">
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-6">
-          {/* Mobile Drawer (visible on small screens) */}
+          {/* Mobile Drawer */}
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -77,14 +74,11 @@ export default function AdminLayout({
 
           {/* Desktop Sidebar */}
           <aside
-            className={`hidden md:block transition-all duration-300 ${
-              collapsed ? "w-20" : "w-64"
-            } relative`}
+            className={`hidden md:block transition-all duration-300 ${collapsed ? "w-20" : "w-64"} relative`}
           >
             <AdminNav collapsed={collapsed} onToggle={handleToggle} />
           </aside>
 
-          {/* Main Content */}
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
