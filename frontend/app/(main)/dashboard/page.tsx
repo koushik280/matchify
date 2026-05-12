@@ -31,7 +31,7 @@ export default function DashboardPage() {
       label: "Profile Views",
       value: user?.profileViews?.toString() ?? "0",
       icon: Users,
-    }, //TODO
+    }, 
     {
       label: "Matches",
       value: user?.matchesCount?.toString() ?? "0",
