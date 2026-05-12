@@ -10,6 +10,7 @@ interface AuthState {
   isLoading: boolean;
   fcmTokens: string | null;
   isLoggedOut: boolean;
+  _hasHydrated: boolean;
   setAuth: (user: User, accessToken: string | null) => void;
   setFcmToken: (token: string | null) => void;
   logout: () => void;
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       _isFetching: false,
       isLoggedOut: false,
+      _hasHydrated: false,
 
       setAuth: (user, accessToken) =>
         set({ user, accessToken, isLoading: false, _isFetching: false }),
@@ -113,6 +115,7 @@ export const useAuthStore = create<AuthState>()(
         if (state) {
           state.isLoading = true;
           state._isFetching = false;
+          state._hasHydrated = true;
         }
       },
     },

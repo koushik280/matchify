@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,7 +13,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading, _hasHydrated } = useAuthStore();
   const router = useRouter();
 
   // Lazy initializer: read localStorage only once during initial render
@@ -34,14 +33,15 @@ export default function AdminLayout({
   };
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!isLoading) {
-      if (!user) router.push("/login");
+      if (!user) router.push("/");
       else if (user.role !== "admin" && user.role !== "superadmin")
         router.push("/dashboard");
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, _hasHydrated, router]);
 
-  if (isLoading) {
+  if (!_hasHydrated || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
