@@ -38,7 +38,9 @@ export function AdminNav({ collapsed, onToggle }: AdminNavProps) {
 
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout");
+      const { fcmTokens } = useAuthStore.getState();
+      const token = fcmTokens || undefined;
+      await api.post("/auth/logout", { token });
       logout();
       toast.success("Logged out");
       router.push("/");
