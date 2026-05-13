@@ -81,7 +81,71 @@ router.post("/notification-token", protect, async (req, res) => {
   }
 });
 
-// POST /api/reports – User submits a report
+/**
+ * @swagger
+ * /reports:
+ *   post:
+ *     summary: Submit a report against a user
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reportedUserId
+ *               - reason
+ *             properties:
+ *               reportedUserId:
+ *                 type: string
+ *                 description: MongoDB ObjectId of the user being reported
+ *                 example: "69f571eeb1f0f73f32735a47"
+ *               reason:
+ *                 type: string
+ *                 enum: [spam, fake_profile, harassment, underage, other]
+ *                 description: Reason for reporting
+ *                 example: "spam"
+ *               description:
+ *                 type: string
+ *                 maxLength: 500
+ *                 description: Optional additional details
+ *                 example: "This user sent inappropriate messages"
+ *     responses:
+ *       201:
+ *         description: Report submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Report submitted successfully"
+ *       400:
+ *         description: Missing required fields or self‑report attempted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized (not logged in)
+ *       404:
+ *         description: Reported user not found
+ *       500:
+ *         description: Server error
+ */
 router.post("/reports", protect, async (req, res) => {
   try {
     const { reportedUserId, reason, description } = req.body;
