@@ -42,7 +42,7 @@ const sendTokenToBackend = async (token: string) => {
 
 export const requestNotificationPermission = async (
   onToken?: (token: string) => void,
-  retries = 4,
+  retries = 3,
 ) => {
   const msg = initMessaging();
   if (!msg || typeof window === "undefined") return;
@@ -50,21 +50,29 @@ export const requestNotificationPermission = async (
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      console.warn("Permission not granted");
+      console.warn("Notification permission not granted");
       return;
     }
 
-    const registration = await navigator.serviceWorker.register(
-      "/firebase-messaging-sw.js",
-      {
-        scope: "/",
-      },
-    );
+    // ✅ Use the existing service worker registration (already registered by ServiceWorkerRegistration component)
+    const registration = await navigator.serviceWorker.getRegistration("/");
+    if (!registration) {
+      console.error(
+        "No service worker registration found. Make sure ServiceWorkerRegistration component is mounted.",
+      );
+      return;
+    }
 
-    let retryActive = 0;
-    while (!registration.active && retryActive < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      retryActive++;
+    // Wait for the service worker to be active
+    if (!registration.active) {
+      await new Promise<void>((resolve) => {
+        const checkActive = setInterval(() => {
+          if (registration.active) {
+            clearInterval(checkActive);
+            resolve();
+          }
+        }, 100);
+      });
     }
 
     let token = null;
@@ -75,7 +83,6 @@ export const requestNotificationPermission = async (
           serviceWorkerRegistration: registration,
         });
         if (token) break;
-
         console.log(`Retry ${i + 1} for token...`);
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (err) {
@@ -84,7 +91,7 @@ export const requestNotificationPermission = async (
     }
 
     if (token) {
-      console.log("FCM Token:", token);
+      console.log("FCM Token obtained:", token);
       await sendTokenToBackend(token);
       if (onToken) onToken(token);
     } else {

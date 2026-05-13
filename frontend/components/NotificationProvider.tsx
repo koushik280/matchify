@@ -55,7 +55,6 @@
 //   return <>{children}</>;
 // }
 
-
 // frontend/components/NotificationProvider.tsx
 "use client";
 import { useEffect, useRef } from "react";
@@ -64,7 +63,11 @@ import { requestNotificationPermission, initMessaging } from "@/lib/firebase";
 import { onMessage } from "firebase/messaging";
 import toast from "react-hot-toast";
 
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user, setFcmToken } = useAuthStore();
   const syncAttempted = useRef(false);
 
@@ -72,14 +75,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     // We only attempt the sync once per session, but we wait for user data
     if (user && user._id && !syncAttempted.current) {
       syncAttempted.current = true;
-      
+
       // Delaying slightly ensures the browser environment is fully stable
       const timer = setTimeout(() => {
         console.log("Edge/Chrome Sync Triggered: User has no tokens stored.");
         requestNotificationPermission((token) => {
           setFcmToken(token);
         });
-      }, 2000); 
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -87,7 +90,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) {
       syncAttempted.current = false;
     }
-  }, [user?._id, user?.fcmTokens, setFcmToken]);
+  }, [user, setFcmToken]);
 
   // Foreground Listener
   useEffect(() => {
@@ -96,21 +99,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!msg) return;
 
     const unsubscribe = onMessage(msg, (payload) => {
-      toast.success(`${payload.notification?.title}: ${payload.notification?.body}`);
+      toast.success(
+        `${payload.notification?.title}: ${payload.notification?.body}`,
+      );
     });
 
     return () => unsubscribe();
-  }, [user?._id]);
+  }, [user]);
 
   return <>{children}</>;
 }
-
-
-
-
-
-
-
-
-
-
