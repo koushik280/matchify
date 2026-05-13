@@ -81,4 +81,55 @@ router.post("/notification-token", protect, async (req, res) => {
   }
 });
 
+// POST /api/reports – User submits a report
+router.post("/reports", protect, async (req, res) => {
+  try {
+    const { reportedUserId, reason, description } = req.body;
+
+    if (!reportedUserId || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: reportedUserId and reason",
+      });
+    }
+
+    // Prevent self-report
+    if (reportedUserId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot report yourself",
+      });
+    }
+
+    // Check if reported user exists
+    const reportedUser = await User.findById(reportedUserId);
+    if (!reportedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const report = new Report({
+      reporterId: req.user._id,
+      reportedUserId,
+      reason,
+      description: description || "",
+      status: "pending",
+    });
+
+    await report.save();
+    res.status(201).json({
+      success: true,
+      message: "Report submitted successfully",
+    });
+  } catch (error) {
+    console.error("Create report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
 module.exports = router;

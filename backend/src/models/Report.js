@@ -23,7 +23,7 @@ const reportSchema = new mongoose.Schema(
       enum: ["pending", "resolved", "dismissed"],
       default: "pending",
     },
-    resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // admin/moderator
+    resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
     resolutionNote: { type: String },
   },
   { timestamps: true },
