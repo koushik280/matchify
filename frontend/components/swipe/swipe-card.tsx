@@ -179,33 +179,6 @@ export function SwipeCard({
               <Flag className="h-6 w-6 text-yellow-500" />
             </button>
           </div>
-
-          {/* Action buttons */}
-          <div className="flex justify-center gap-6 mt-6">
-            <button
-              onClick={handlePass}
-              disabled={disabled}
-              className="p-4 rounded-full bg-rose-500/20 hover:bg-rose-500/40 transition-colors disabled:opacity-50"
-            >
-              <X className="h-6 w-6 text-rose-500" />
-            </button>
-            <button
-              onClick={handleLike}
-              disabled={disabled}
-              className="p-4 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 transition-colors disabled:opacity-50"
-            >
-              <Heart className="h-6 w-6 text-emerald-500" />
-            </button>
-            {/* ✅ NEW: Report button */}
-            <button
-              onClick={() => setShowReportModal(true)}
-              disabled={disabled}
-              className="p-4 rounded-full bg-yellow-500/20 hover:bg-yellow-500/40 transition-colors disabled:opacity-50"
-              title="Report this user"
-            >
-              <Flag className="h-6 w-6 text-yellow-500" />
-            </button>
-          </div>
         </GlassCard>
       </motion.div>
       {/* ✅ ADDED: Report Modal */}
